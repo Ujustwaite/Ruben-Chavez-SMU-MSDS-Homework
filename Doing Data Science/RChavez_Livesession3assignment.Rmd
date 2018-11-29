@@ -1,0 +1,144 @@
+---
+title: "RChavez_Livesession3assignment"
+author: "Ruben Chavez"
+date: "November 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Question 1
+
+The following code is Git and completes the described actions:  
+Note: The code assumes you are in a pre-existing directory in which you wish to create your new directory.
+
+* Create a new directory
+
+```{r Create a new directory with Git}
+#mkdir Session-3-Homework
+```
+
+* Navigate to the appropriate directory
+
+```{r Navigate to the appropriate directory with Git}
+#cd Session-3-Homework
+```
+
+* Clone the repository, "https://github.com/caesar0301/awesome-public-datasets" to the directory
+
+```{r clone the repository to the new directory with Git}
+#git clone [https://github.com/caesar0301/awesome-public-datasets]
+```
+
+#Question 2
+##a.Read in the titanic.csv file
+
+```{r read in file}
+df <- read.csv("~/GitHub/Session-3-Homework/awesome-public-datasets/Datasets/titanic.csv/titanic.csv")
+```
+
+##b.Outbut the respective count of females and Males and Plot the frequency of females and Males
+
+```{r count of females and males}
+table(df$sex)
+```
+
+
+```{r Plot of Frequency of Females and Males}
+barplot.default(table(df$Sex), main = "Frequency by Gender")
+```
+
+##c Use an apply funtion to outpout the means of Age, Fare, and Survival
+
+```{r sapply to return mean of columns for age fare and survival}
+sapply(df[, c("Age", "Fare", "Survived")], mean, na.rm=TRUE)
+```
+
+
+#Question 3
+
+```{r read sleep_data_01}
+sleep_data_01 <- read.csv("http://talklab.psy.gla.ac.uk/L1_labs/lab_1/homework/sleep_data_01.csv")
+```
+
+
+
+```{r helper function}
+HelperFunction<- function(x){
+  MedianAge <- median(x[,"Age"], na.rm = TRUE)
+  MaxSleepDuration <- max(x[,"Duration"], na.rm = TRUE)
+  MinSleepDuration <- min(x[,"Duration"], na.rm = TRUE)
+  MeanRSES <- mean(x[,"RSES"], na.rm = TRUE)
+  SDRSES <- sd(x[,"RSES"], na.rm = TRUE)
+  Report <- data.frame("Median Age" =  MedianAge, "Mean RSES" =MeanRSES/5,
+                       "SD RSES" = SDRSES/5,"Range of Duration" = 
+                         MaxSleepDuration - MinSleepDuration)
+
+  names(Report) <- c("MedianAge", "SelfEsteem", "SE_SD", "DurationRange")
+  Report <- round(Report, digits =2)
+  return(Report)
+}
+
+HelperFunction(sleep_data_01)
+```
+
+#Question 4
+
+##a.
+```{r install fivethirtyeight}
+#install.packages("fivethirtyeight")
+```
+
+##b.
+```{r assign 22nd data set to df}
+df <- get(data(list=data(package="fivethirtyeight")$results[22,"Item"],package = "fivethirtyeight"))
+```
+
+##c.
+
+```{r url for related new story}
+#http://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/
+```
+
+##d.
+
+```{r dimensions and column names for df}
+dim(df)
+names(df)
+```
+
+#Question 5
+
+##a
+
+```{r Column names and count}
+names(df)
+ncol(df)
+```
+
+##b
+
+```{r count of unique values in major_category}
+major_count <- as.data.frame(table(df$major_category))
+```
+
+##c
+
+```{r barplot of major_count}
+par(las=1)
+par(mar=c(5,17,4,2))
+barplot.default(height = major_count$Freq,names.arg = major_count$Var1, horiz = TRUE, col = "aquamarine2", xlab = "Count of Major Category",main = "Frequency of Unique Major Categories")
+title(ylab = "Major Categories", mgp=c(15,1,0))
+```
+
+##d
+
+```{r write df to a csv file}
+write.csv(df, file = "College Recent Graduates", row.names = FALSE)
+```
+
+#Question 6
+
+https://github.com/rechavez/Ruben-Chavez-SMU-MSDS-Homework
