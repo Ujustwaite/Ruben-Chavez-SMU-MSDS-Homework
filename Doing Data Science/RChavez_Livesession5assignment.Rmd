@@ -1,0 +1,65 @@
+---
+title: "RChavez_Livesession5assignment"
+author: "Ruben Chavez"
+date: "December 16, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+```
+
+#Question 1
+
+```{r import yob2016.txt}
+df <- read_delim("yob2016.txt", ";",   escape_double = FALSE, col_names = c("FirstName", "Gender",  "#ChildrenWithName"), col_types = cols("Gender" = col_factor(levels = c("F",         "M"))), trim_ws = TRUE)
+```
+
+```{r display summary and structure of df}
+summary(df)
+str(df)
+```
+
+```{r find and display name with three y at the end}
+grep("y{3}$", df$FirstName, value = TRUE)
+```
+
+```{r remove redundant name with three y at the end}
+y2016 <- df[- grep("y{3}$", df$FirstName), ]
+```
+
+#Question2
+
+```{r import yob2015.txt}
+y2015 <- read_delim("yob2015.txt", ",", escape_double = FALSE, col_names = c("FirstName", "Gender", "#ChildrenWithName"), col_types = cols("Gender" = col_factor(levels = c("F",         "M"))), trim_ws = TRUE)
+```
+
+```{r display last 10 rows}
+tail(y2015, 10)
+```
+
+It is interesting to note that the last ten rows are all have gender as Male and the exact same count of children with those names of 5.
+
+```{r merge y2015 and y2016 into final}
+final <- merge(y2015, y2016, by = c("FirstName", "Gender"))
+```
+
+#Question 3
+
+```{r Create new Total Column}
+final$Total <- final$`#ChildrenWithName.x` + final$`#ChildrenWithName.y`
+```
+
+```{r sort by Total and display top 10}
+final <- final[order(final$Total, decreasing = TRUE),]
+head(final, 10)
+```
+
+```{r display top 10 girls names}
+head(subset(final, Gender == "F"), 10)
+```
+
+```{r write names and totals of top 10 girls names to file}
+write.csv(final[c(1:10), c(1,5)], file = "Top 10 Girl Names.csv", row.names = FALSE)
+```
