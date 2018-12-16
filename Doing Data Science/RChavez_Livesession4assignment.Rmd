@@ -1,0 +1,85 @@
+---
+title: "RChavez_Livesession4assignment"
+author: "Ruben Chavez"
+date: "December 4, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Question 1
+
+
+```{r create data frame by scraping Cast in order of crediting}
+library(rvest)
+library(stringr)
+movie <- read_html("https://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1")
+actorHtmlObject <- ".primary_photo+ td a"
+characterHtmlObject <- ".character"
+actorHtml <- html_nodes(movie, actorHtmlObject)
+characterHtml <- html_nodes(movie, characterHtmlObject)
+Cast <- data.frame("Actor" = html_text(actorHtml, trim = TRUE),
+                   "CharacterRole" = html_text(characterHtml, trim = TRUE))
+NmbrCol <- ncol(Cast)
+Cast[, 1:NmbrCol] <-sapply(Cast[, 1:NmbrCol], function(x) {gsub("[\n]", "", x)})
+
+```
+
+```{r split names into first/middle name and last name}
+
+Cast$ActorFirstMiddleName = word(Cast$Actor, end = -2)
+Cast$ActorLastName =word(Cast$Actor, -1)
+Cast[,"Actor"] <- NULL
+Cast <- Cast[c("ActorFirstMiddleName", "ActorLastName", "CharacterRole")]
+```
+
+```{r View the first ten rows}
+head(Cast, 10)
+```
+
+#Question 2
+
+```{r create data frame by scraping Shooting Statistics Table}
+team <- read_html("http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs") 
+StatisticHtmlObject <- "//*[@id=\"my-players-table\"]/div[3]/div[3]"
+htmlTbls <- html_nodes(team, "table")
+ShootingStats <- data.frame(html_table(htmlTbls, header = TRUE)[2])
+colnames(ShootingStats) <- ShootingStats[1,]
+ShootingStats <- ShootingStats[-1,]
+NmbrCol <- ncol(ShootingStats)
+NmbrRow <- nrow(ShootingStats)
+ShootingStats <- ShootingStats[1:NmbrRow-1, ]
+
+library("tidyr")
+ShootingStats <- separate(ShootingStats, col = 1,
+                          into = c("Name", "Position"),sep = ",",
+                          remove = TRUE)
+```
+
+```{r check class of columns and convert needed to numeric}
+str(ShootingStats)
+ShootingStats[, 3:NmbrCol] <- sapply(ShootingStats[, 3:NmbrCol], as.numeric)
+str(ShootingStats)
+```
+
+```{r barchart of Field Goals Percentage Per Game}
+#set inital parameters
+par(las=2)
+par(mar=c(10,4,3,2))
+#convert positions into list of colors and create vector to match positions of players
+palette <- RColorBrewer::brewer.pal(length(unique(ShootingStats$Position)),name = 'Set1')
+PosColor <- c(palette[as.factor(ShootingStats$Position)])
+barplot.default(height = ShootingStats$`FG%`, names.arg = ShootingStats$Name,
+                main = "Player Average Field Goals per Game",
+                ylab = "Average Field Goal Percentage",
+                col = PosColor, col.main='Blue')
+title(xlab = "Player", mgp=c(7,1,0))
+
+#create legend for colors
+legend("topleft", cex=0.6,ncol=2,text.width = 1.6,bty = 'n',
+       x.intersp = .2,y.intersp = .59,box.lwd = 0,
+       legend = ShootingStats$Position[!duplicated(ShootingStats$Position)],
+       fill = PosColor[!duplicated(PosColor)])
+```
