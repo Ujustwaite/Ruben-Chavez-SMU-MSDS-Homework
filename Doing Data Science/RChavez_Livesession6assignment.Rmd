@@ -1,0 +1,53 @@
+---
+title: "RChavez_Livesession6assignment"
+author: "Ruben Chavez"
+date: "December 16, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+'%ni%' <- Negate('%in%')
+```
+
+#Question 1
+
+```{r load data}
+load("~/SMU/Doing Data Science/Session 6/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+```
+
+```{r list Stat abbreviations without counts}
+mh2015_puf$LST <- as.factor(trimws(mh2015_puf$LST))
+levels(mh2015_puf$LST)
+```
+
+```{r data frame of data for US Mainland Medical Centers with counts}
+library(dplyr)
+df <- subset(mh2015_puf, mh2015_puf$LST %ni% c("HI", "AS", "GU", "PR", "VI"))
+```
+
+```{r barchart of filtered data ,fig.width=20}
+library(ggplot2)
+ggplot(data = df, aes(x = LST, fill = LST), xlab("State")) + geom_bar() + geom_text(stat='Count', aes(label=..count..)) + ggtitle("Medical Centers by State") + xlab("State") + ylab("Count of Medical Centers") + labs(fill = "State") + theme(plot.title = element_text(hjust = 0.5, size = 30, face = "bold"))
+```
+
+#Question 2
+
+```{r read statesize csv}
+library(readr)
+statesize <- read_csv("statesize.csv")
+```
+
+I had already run across the whitespace issue in the LSD column above when filtering the df. The levels all had multiple whitespaces to the right. The method "trimws" was used to remove the white space.
+
+```{r merge statesize with df on state abbreviation add count per 1K Square Miles}
+df <- merge(df, statesize, by.x = "LST", by.y = "Abbrev")
+df$CountPer1000SqMile <- 1000/df$SqMiles
+```
+
+```{r barchart MedicalCenters per 1K Square Miles, fig.width=20 }
+library(RColorBrewer)
+ggplot(data = df, aes(x = reorder(LST, -CountPer1000SqMile, order = TRUE), fill = Region, y= CountPer1000SqMile), xlab("State")) + geom_bar(stat = "identity") + ggtitle("Medical Centers by State") + xlab("State") + ylab("Count of Medical Centers Per 1K Miles") + labs(fill = "State") + theme(plot.title = element_text(hjust = 0.5, size = 30, face = "bold")) + scale_fill_brewer(palette="Dark2")
+```
+
+The Northeast has a much higher  concentration of Medical Centers per 1K square miles, and the West has the lowest concentration of Medical Centers per 1K square miles. I would recommend we take this conentration level into account, but we also need to somehow compare to population density.
